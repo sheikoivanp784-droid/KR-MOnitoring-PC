@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36804.6 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "КР Мониторінг ста", "КР Мониторінг ста\КР Мониторінг ста.csproj", "{3FDBC0D5-1D7C-46C3-A981-0590025993C3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3FDBC0D5-1D7C-46C3-A981-0590025993C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FDBC0D5-1D7C-46C3-A981-0590025993C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FDBC0D5-1D7C-46C3-A981-0590025993C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FDBC0D5-1D7C-46C3-A981-0590025993C3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {774DC362-6D1A-45A6-9DD8-2BC6F5EB10D2}
+	EndGlobalSection
+EndGlobal
