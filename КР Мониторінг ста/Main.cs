@@ -16,5 +16,17 @@ namespace КР_Мониторінг_ста
         {
             InitializeComponent();
         }
+
+        private void btnMon_Click(object sender, EventArgs e)
+        {
+            Monitoring monitoringForm = new Monitoring();
+            monitoringForm.ShowDialog();
+        }
+
+        private void btnSet_Click(object sender, EventArgs e)
+        {
+            Settings monitoringForm = new Settings();
+            monitoringForm.ShowDialog();
+        }
     }
 }
