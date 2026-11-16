@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -27,10 +28,21 @@ namespace КР_Мониторінг_ста
         private float totalSharedGb = 16f;
         private string nvidiaSmiPath = null;
 
+        private Process nvidiaProcess = null;
+        private volatile float nvLatestLoad = -1f;
+        private volatile float nvLatestUsedMb = 0f;
+        private volatile float nvLatestTotalMb = 0f;
+        private string nvLatestTemp = "Н/Д";
+
+        private Dictionary<string, PerformanceCounter> engineCounters = new Dictionary<string, PerformanceCounter>();
+        private DateTime lastRefreshTime = DateTime.MinValue;
+
         public GpuMon()
         {
             FindNvidiaSmi();
             LoadStaticInfo();
+            StartNvidiaBackgroundStream();
+            RefreshEngineCounters();
         }
 
         private void FindNvidiaSmi()
@@ -46,6 +58,45 @@ namespace КР_Мониторінг_ста
                 nvidiaSmiPath = "nvidia-smi";
         }
 
+        private void StartNvidiaBackgroundStream()
+        {
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = nvidiaSmiPath,
+                    Arguments = "--query-gpu=utilization.gpu,temperature.gpu,memory.used,memory.total --format=csv,noheader,nounits -l 1",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                nvidiaProcess = new Process { StartInfo = psi, EnableRaisingEvents = true };
+                nvidiaProcess.OutputDataReceived += (s, e) =>
+                {
+                    if (string.IsNullOrWhiteSpace(e.Data)) return;
+                    string[] parts = e.Data.Split(',');
+                    if (parts.Length >= 4)
+                    {
+                        if (float.TryParse(parts[0].Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out float load))
+                            nvLatestLoad = load;
+
+                        nvLatestTemp = $"{parts[1].Trim()} °C";
+
+                        if (float.TryParse(parts[2].Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out float usedMb))
+                            nvLatestUsedMb = usedMb;
+
+                        if (float.TryParse(parts[3].Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out float totalMb) && totalMb > 0)
+                            nvLatestTotalMb = totalMb;
+                    }
+                };
+
+                nvidiaProcess.Start();
+                nvidiaProcess.BeginOutputReadLine();
+            }
+            catch { }
+        }
+
         private void LoadStaticInfo()
         {
             try
@@ -59,9 +110,7 @@ namespace КР_Мониторінг_ста
 
                         string rawDate = obj["DriverDate"]?.ToString();
                         if (!string.IsNullOrEmpty(rawDate) && rawDate.Length >= 8)
-                        {
                             DriverDate = $"{rawDate.Substring(6, 2)}/{rawDate.Substring(4, 2)}/{rawDate.Substring(0, 4)}";
-                        }
 
                         totalSharedGb = GetTotalSystemRamGb() / 2f;
                         Location = obj["PNPDeviceID"]?.ToString().Split('\\')[0] ?? "PCI-шина";
@@ -89,94 +138,84 @@ namespace КР_Мониторінг_ста
             return 32f;
         }
 
-        private bool ReadNvidiaStats(out float gpuLoad, out string tempStr, out float usedVramGb, out float totalVramGb)
+        private void RefreshEngineCounters()
         {
-            gpuLoad = 0f;
-            tempStr = "Н/Д";
-            usedVramGb = 0f;
-            totalVramGb = totalDedicatedGb;
-
             try
             {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = nvidiaSmiPath,
-                    Arguments = "--query-gpu=utilization.gpu,temperature.gpu,memory.used,memory.total --format=csv,noheader,nounits",
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
+                var category = new PerformanceCounterCategory("GPU Engine");
+                var currentNames = new HashSet<string>(category.GetInstanceNames());
 
-                using (var proc = Process.Start(psi))
+                var toRemove = new List<string>();
+                foreach (var kvp in engineCounters)
                 {
-                    string output = proc.StandardOutput.ReadToEnd().Trim();
-                    proc.WaitForExit(400);
-
-                    if (!string.IsNullOrEmpty(output))
+                    if (!currentNames.Contains(kvp.Key))
                     {
-                        string[] parts = output.Split(',');
-                        if (parts.Length >= 4)
-                        {
-                            float.TryParse(parts[0].Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out gpuLoad);
-                            tempStr = $"{parts[1].Trim()} °C";
-
-                            float usedMb = 0f, totalMb = 0f;
-                            float.TryParse(parts[2].Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out usedMb);
-                            float.TryParse(parts[3].Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out totalMb);
-
-                            usedVramGb = usedMb / 1024f;
-                            if (totalMb > 0)
-                            {
-                                totalVramGb = totalMb / 1024f;
-                                totalDedicatedGb = totalVramGb;
-                            }
-                            return true;
-                        }
+                        kvp.Value.Dispose();
+                        toRemove.Add(kvp.Key);
                     }
                 }
+                foreach (string key in toRemove)
+                    engineCounters.Remove(key);
+
+                foreach (string name in currentNames)
+                {
+                    if (engineCounters.ContainsKey(name)) continue;
+
+                    if (name.EndsWith("engtype_3D") ||
+                        name.Contains("Graphics") ||
+                        name.EndsWith("engtype_Copy") ||
+                        name.EndsWith("engtype_VideoEncode") ||
+                        name.EndsWith("engtype_VideoDecode"))
+                    {
+                        var counter = new PerformanceCounter("GPU Engine", "Utilization Percentage", name, true);
+                        counter.NextValue();
+                        engineCounters[name] = counter;
+                    }
+                }
+
+                lastRefreshTime = DateTime.Now;
             }
             catch { }
-
-            return false;
         }
 
-        private void UpdateWindowsEngines(out float val3d, out float valCopy, out float valEncode, out float valDecode)
+        private void ReadWindowsEngines(out float val3d, out float valCopy, out float valEncode, out float valDecode)
         {
             val3d = 0f;
             valCopy = 0f;
             valEncode = 0f;
             valDecode = 0f;
 
-            try
-            {
-                var category = new PerformanceCounterCategory("GPU Engine");
-                string[] instances = category.GetInstanceNames();
+            if ((DateTime.Now - lastRefreshTime).TotalSeconds >= 3.0)
+                RefreshEngineCounters();
 
-                foreach (string name in instances)
+            var deadKeys = new List<string>();
+            foreach (var kvp in engineCounters)
+            {
+                try
                 {
+                    float val = kvp.Value.NextValue();
+                    string name = kvp.Key;
+
                     if (name.EndsWith("engtype_3D") || name.Contains("Graphics"))
-                    {
-                        using (var c = new PerformanceCounter("GPU Engine", "Utilization Percentage", name, true))
-                            val3d += c.NextValue();
-                    }
+                        val3d += val;
                     else if (name.EndsWith("engtype_Copy"))
-                    {
-                        using (var c = new PerformanceCounter("GPU Engine", "Utilization Percentage", name, true))
-                            valCopy += c.NextValue();
-                    }
+                        valCopy += val;
                     else if (name.EndsWith("engtype_VideoEncode"))
-                    {
-                        using (var c = new PerformanceCounter("GPU Engine", "Utilization Percentage", name, true))
-                            valEncode += c.NextValue();
-                    }
+                        valEncode += val;
                     else if (name.EndsWith("engtype_VideoDecode"))
-                    {
-                        using (var c = new PerformanceCounter("GPU Engine", "Utilization Percentage", name, true))
-                            valDecode += c.NextValue();
-                    }
+                        valDecode += val;
+                }
+                catch
+                {
+                    deadKeys.Add(kvp.Key);
                 }
             }
-            catch { }
+
+            foreach (string key in deadKeys)
+            {
+                engineCounters[key].Dispose();
+                engineCounters.Remove(key);
+            }
 
             val3d = Math.Min(100f, val3d);
             valCopy = Math.Min(100f, valCopy);
@@ -186,15 +225,20 @@ namespace КР_Мониторінг_ста
 
         public void Update()
         {
-            UpdateWindowsEngines(out float val3d, out float valCopy, out float valEncode, out float valDecode);
+            ReadWindowsEngines(out float val3d, out float valCopy, out float valEncode, out float valDecode);
 
-            bool hasNvidia = ReadNvidiaStats(out float nvLoad, out string nvTemp, out float usedDedicatedGb, out float totalVramGb);
+            float usedDedicatedGb = 0f;
+            bool hasNvidiaStream = nvLatestLoad >= 0f;
 
-            if (hasNvidia)
+            if (hasNvidiaStream)
             {
-                Usage = Math.Min(100f, Math.Max(nvLoad, val3d));
-                Temperature = nvTemp;
-                if (val3d < nvLoad) val3d = nvLoad;
+                Usage = Math.Min(100f, Math.Max(nvLatestLoad, val3d));
+                Temperature = nvLatestTemp;
+                if (val3d < nvLatestLoad) val3d = nvLatestLoad;
+
+                usedDedicatedGb = nvLatestUsedMb / 1024f;
+                if (nvLatestTotalMb > 0)
+                    totalDedicatedGb = nvLatestTotalMb / 1024f;
             }
             else
             {
@@ -215,7 +259,7 @@ namespace КР_Мониторінг_ста
                     using (var shdCounter = new PerformanceCounter("GPU Adapter Memory", "Shared Usage", inst, true))
                         usedSharedGb += shdCounter.NextValue() / (1024f * 1024f * 1024f);
 
-                    if (!hasNvidia)
+                    if (!hasNvidiaStream)
                     {
                         using (var dedCounter = new PerformanceCounter("GPU Adapter Memory", "Dedicated Usage", inst, true))
                             usedDedicatedGb += dedCounter.NextValue() / (1024f * 1024f * 1024f);
