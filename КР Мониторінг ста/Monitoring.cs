@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
+using System.IO;
+using System.Text;
+using System.Reflection;
 
 namespace КР_Мониторінг_ста
 {
@@ -317,5 +320,11 @@ namespace КР_Мониторінг_ста
         {
             SwitchToWifi();
         }
+
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            Save.SaveFullSystemReport(this);
+        }
+
     }
 }

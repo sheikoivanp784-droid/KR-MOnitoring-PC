@@ -42,6 +42,7 @@
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.lblTitle = new System.Windows.Forms.Label();
             this.lblDeviceName = new System.Windows.Forms.Label();
+            this.btnSave = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -140,11 +141,22 @@
             this.lblDeviceName.TabIndex = 8;
             this.lblDeviceName.Text = "lblDeviceName";
             // 
+            // btnSave
+            // 
+            this.btnSave.Location = new System.Drawing.Point(52, 522);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(121, 36);
+            this.btnSave.TabIndex = 9;
+            this.btnSave.Text = "Save";
+            this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+            // 
             // Monitoring
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1427, 766);
+            this.ClientSize = new System.Drawing.Size(1370, 749);
+            this.Controls.Add(this.btnSave);
             this.Controls.Add(this.lblDeviceName);
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.chart1);
@@ -175,5 +187,6 @@
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
         private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.Label lblDeviceName;
+        private System.Windows.Forms.Button btnSave;
     }
 }
