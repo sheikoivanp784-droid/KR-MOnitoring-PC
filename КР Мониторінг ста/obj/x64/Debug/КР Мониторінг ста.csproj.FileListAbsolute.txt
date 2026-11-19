@@ -1,0 +1,12 @@
+C:\Users\Иван\OneDrive\Desktop\LABA\КР Мониторінг ста\КР Мониторінг ста\bin\x64\Debug\КР Мониторінг ста.exe.config
+C:\Users\Иван\OneDrive\Desktop\LABA\КР Мониторінг ста\КР Мониторінг ста\bin\x64\Debug\КР Мониторінг ста.exe
+C:\Users\Иван\OneDrive\Desktop\LABA\КР Мониторінг ста\КР Мониторінг ста\bin\x64\Debug\КР Мониторінг ста.pdb
+C:\Users\Иван\OneDrive\Desktop\LABA\КР Мониторінг ста\КР Мониторінг ста\obj\x64\Debug\КР Мониторінг ста.csproj.AssemblyReference.cache
+C:\Users\Иван\OneDrive\Desktop\LABA\КР Мониторінг ста\КР Мониторінг ста\obj\x64\Debug\КР_Мониторінг_ста.Main.resources
+C:\Users\Иван\OneDrive\Desktop\LABA\КР Мониторінг ста\КР Мониторінг ста\obj\x64\Debug\КР_Мониторінг_ста.Monitoring.resources
+C:\Users\Иван\OneDrive\Desktop\LABA\КР Мониторінг ста\КР Мониторінг ста\obj\x64\Debug\КР_Мониторінг_ста.Properties.Resources.resources
+C:\Users\Иван\OneDrive\Desktop\LABA\КР Мониторінг ста\КР Мониторінг ста\obj\x64\Debug\КР Мониторінг ста.csproj.GenerateResource.cache
+C:\Users\Иван\OneDrive\Desktop\LABA\КР Мониторінг ста\КР Мониторінг ста\obj\x64\Debug\КР Мониторінг ста.csproj.CoreCompileInputs.cache
+C:\Users\Иван\OneDrive\Desktop\LABA\КР Мониторінг ста\КР Мониторінг ста\obj\x64\Debug\КР Мониторінг ста.exe
+C:\Users\Иван\OneDrive\Desktop\LABA\КР Мониторінг ста\КР Мониторінг ста\obj\x64\Debug\КР Мониторінг ста.pdb
+C:\Users\Иван\OneDrive\Desktop\LABA\КР Мониторінг ста\КР Мониторінг ста\obj\x64\Debug\КР Мониторінг ста.exe.config

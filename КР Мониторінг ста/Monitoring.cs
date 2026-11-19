@@ -323,7 +323,11 @@ namespace КР_Мониторінг_ста
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            Save.SaveFullSystemReport(this);
+            string dbPath = System.IO.Path.GetFullPath(
+        System.IO.Path.Combine(Application.StartupPath, @"..\..\..\MonitoringLog.accdb"));
+
+            Save logger = new Save(dbPath, cpuMon, gpuMon, ramMon, diskMon, wifiMon);
+            logger.SaveSnapshot();
         }
 
     }

@@ -24,3 +24,4 @@ C:\Users\ivans\OneDrive\Документи\GitHub\KR-MOnitoring-PC\КР Мони
 C:\Users\ivans\OneDrive\Документи\GitHub\KR-MOnitoring-PC\КР Мониторінг ста\obj\Debug\КР Мониторінг ста.csproj.CoreCompileInputs.cache
 C:\Users\ivans\OneDrive\Документи\GitHub\KR-MOnitoring-PC\КР Мониторінг ста\obj\Debug\КР Мониторінг ста.exe
 C:\Users\ivans\OneDrive\Документи\GitHub\KR-MOnitoring-PC\КР Мониторінг ста\obj\Debug\КР Мониторінг ста.pdb
+C:\Users\Иван\OneDrive\Desktop\LABA\КР Мониторінг ста\КР Мониторінг ста\bin\Debug\MonitoringLog.accdb

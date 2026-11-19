@@ -23,10 +23,6 @@ namespace КР_Мониторінг_ста
             monitoringForm.ShowDialog();
         }
 
-        private void btnSet_Click(object sender, EventArgs e)
-        {
-            Settings monitoringForm = new Settings();
-            monitoringForm.ShowDialog();
-        }
+        
     }
 }
